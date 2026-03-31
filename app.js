@@ -42,12 +42,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function fetchAndRender() {
   const grid = document.getElementById('products-grid');
-  
+
   // 1. Tentar carregar do cache instantaneamente
   try {
     const cachedProducts = JSON.parse(localStorage.getItem('doces_cache_products') || "[]");
     const cachedConfig = JSON.parse(localStorage.getItem('doces_cache_config') || "{}");
-    
+
     if (cachedProducts.length > 0) {
       products = cachedProducts;
       config = cachedConfig;
@@ -63,7 +63,7 @@ async function fetchAndRender() {
         <style>@keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-15px); } }</style>
       `;
     }
-  } catch (e) {}
+  } catch (e) { }
 
   // 2. Buscar dados atualizados do banco em paralelo (muito mais rápido)
   try {
@@ -71,7 +71,7 @@ async function fetchAndRender() {
       STORE.loadProducts(),
       STORE.loadConfig()
     ]);
-    
+
     // Atualizar variáveis globais
     products = freshProducts;
     config = freshConfig;
@@ -84,7 +84,7 @@ async function fetchAndRender() {
     applyConfig();
     renderProducts();
   } catch (err) {
-    if(grid && products.length === 0) grid.innerHTML = '<p style="text-align:center;width:100%;color:red;">Falha ao conectar no servidor.</p>';
+    if (grid && products.length === 0) grid.innerHTML = '<p style="text-align:center;width:100%;color:red;">Falha ao conectar no servidor.</p>';
   }
 }
 
