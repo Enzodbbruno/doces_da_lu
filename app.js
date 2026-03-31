@@ -706,7 +706,6 @@ async function confirmOrder() {
     if (pref && pref.init_point) {
       // Limpa carrinho antes do redirect para nao manter caso o cliente volte
       cart = [];
-      saveCart();
       window.location.href = pref.init_point;
       return;
     }
