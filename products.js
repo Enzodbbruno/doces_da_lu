@@ -62,8 +62,8 @@ const DEFAULT_PRODUCTS = [
 // Configurações da loja
 const DEFAULT_CONFIG = {
   storeName: "Doces da LU",
-  whatsapp: "5594999999999",
-  instagram: "docesdalu",
+  whatsapp: "5594984034495",
+  instagram: "doces_luizaf",
   pixKey: "docesdalu@email.com",
   pixKeyType: "E-mail",
   deliveryArea: "Marabá/PA",
