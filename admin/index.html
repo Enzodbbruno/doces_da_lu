@@ -398,7 +398,55 @@
   </style>
 </head>
 <body>
-<div class="admin-layout">
+
+  <!-- ===============================
+       TELA DE LOGIN
+       =============================== -->
+  <div id="login-overlay" style="position:fixed;top:0;left:0;right:0;bottom:0;background:var(--dark);z-index:9999;display:flex;justify-content:center;align-items:center;flex-direction:column;gap:1.5rem;font-family:'Inter',sans-serif;">
+    <div style="background:white;padding:3rem 2.5rem;border-radius:var(--radius-md);box-shadow:var(--shadow-md);text-align:center;width:90%;max-width:400px;">
+      <div style="font-size:3rem;margin-bottom:1rem;">🔐</div>
+      <h2 style="font-family:'Playfair Display',serif;color:var(--text-dark);margin-bottom:0.5rem;">Acesso Restrito</h2>
+      <p style="color:var(--text-mid);font-size:0.9rem;margin-bottom:2rem;">Digite a senha para acessar o painel</p>
+      
+      <form id="login-form">
+        <input type="password" id="login-pwd" placeholder="Sua senha..." style="width:100%;padding:0.9rem 1.2rem;border:2px solid var(--lilac-pale);border-radius:var(--radius-sm);font-size:1rem;margin-bottom:1.5rem;outline:none;transition:border-color 0.2s;" onfocus="this.style.borderColor='var(--lilac)'" onblur="this.style.borderColor='var(--lilac-pale)'" />
+        <button type="submit" style="width:100%;padding:1rem;background:var(--lilac);color:white;border:none;border-radius:var(--radius-sm);font-weight:600;font-size:1rem;cursor:pointer;transition:background 0.2s;" onmouseover="this.style.background='var(--lilac-mid)'" onmouseout="this.style.background='var(--lilac)'">Entrar</button>
+      </form>
+      <p id="login-err" style="color:var(--danger);font-size:0.85rem;margin-top:1rem;display:none;">Senha incorreta! 🛑</p>
+    </div>
+  </div>
+
+  <script>
+    // Proteção de Login Simples
+    document.addEventListener("DOMContentLoaded", () => {
+      const overlay = document.getElementById("login-overlay");
+      const form = document.getElementById("login-form");
+      const err = document.getElementById("login-err");
+      const adminLayout = document.getElementById("admin-layout-main");
+
+      // Verifica se a sessão já está liberada
+      if (sessionStorage.getItem("admin_auth") === "yes") {
+        overlay.style.display = "none";
+        adminLayout.style.display = "flex";
+      }
+
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const pwd = document.getElementById("login-pwd").value;
+        // Senha padrão temporária:
+        if (pwd === "doce123") {
+          sessionStorage.setItem("admin_auth", "yes");
+          overlay.style.display = "none";
+          adminLayout.style.display = "flex";
+        } else {
+          err.style.display = "block";
+          document.getElementById("login-pwd").value = "";
+        }
+      });
+    });
+  </script>
+
+<div class="admin-layout" id="admin-layout-main" style="display:none;">
 
   <!-- SIDEBAR -->
   <aside class="sidebar">

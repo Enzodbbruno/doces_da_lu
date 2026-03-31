@@ -80,11 +80,8 @@ async function loadProducts() {
   const prods = await window.supabaseClient.getProducts();
   if (prods && prods.length > 0) return prods;
   
-  // Se estiver vazio, popula com os defaults
-  for (const p of DEFAULT_PRODUCTS) {
-    await window.supabaseClient.saveProduct(p);
-  }
-  return JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
+  // Se estiver vazio ou der erro, não salva mais por cima, apenas exibe vazio na tela.
+  return [];
 }
 
 /**
