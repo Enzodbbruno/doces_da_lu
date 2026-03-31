@@ -569,30 +569,13 @@
   </main>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../supabase-client.js"></script>
+
 <script>
-// Carrega dados
-const products_data = JSON.parse(localStorage.getItem('docesdalu_products') || '[]');
-const config_data = JSON.parse(localStorage.getItem('docesdalu_config') || '{}');
-
-const DEFAULT_CONFIG = {
-  storeName: "Doces da LU",
-  whatsapp: "5594999999999",
-  instagram: "docesdalu",
-  pixKey: "docesdalu@email.com",
-  pixKeyType: "E-mail",
-  deliveryArea: "Marabá/PA",
-  mercadoPagoPublicKey: "",
-};
-
-const DEFAULT_PRODUCTS = [
-  { id:"bolo-cenoura", name:"Bolo de Cenoura", emoji:"🍫", badge:"Mais Pedido", description:"Casca de chocolate branco, com recheio de creme de Nutella e pedaços de Kinder Bueno.", shortDesc:"Casca de choc. branco, creme de Nutella e Kinder Bueno", price:80, weight:"350g", image:"../images/ovo_bolo_cenoura.png", available:true, highlight:true },
-  { id:"pistache", name:"Pistache", emoji:"🤍", badge:"Novidade", description:"Casca de chocolate branco com gotas de chocolate e recheio de chocolate branco com coco.", shortDesc:"Casca de choc. branco com gotas e recheio de choc. branco com coco", price:60, weight:"350g", image:"../images/ovo_pistache.png", available:true, highlight:false },
-  { id:"dois-amores", name:"Dois Amores", emoji:"💛", badge:"Clássico", description:"Casca de chocolate ao leite com recheio de brigadeiro belga e chocolate granulado.", shortDesc:"Casca de choc. ao leite com brigadeiro belga e granulado", price:60, weight:"350g", image:"../images/ovo_dois_amores.png", available:true, highlight:false },
-  { id:"trufa-premium", name:"Trufa Premium", emoji:"🖤", badge:"Premium", description:"Casca de chocolate amargo 70% cacau recheado com trufas artesanais cobertas de cacau em pó.", shortDesc:"Casca amarga 70% cacau com trufas artesanais e cacau em pó", price:90, weight:"350g", image:"../images/ovo_trufa.png", available:true, highlight:false },
-];
-
-let products = products_data.length ? products_data : DEFAULT_PRODUCTS;
-let config = { ...DEFAULT_CONFIG, ...config_data };
+// Variáveis globais
+let products = [];
+let config = {};
 
 /* ---- TAB NAV ---- */
 function showTab(tab) {
@@ -603,12 +586,7 @@ function showTab(tab) {
 }
 
 /* ---- PEDIDOS ---- */
-function loadAllOrders() {
-  try { return JSON.parse(localStorage.getItem('docesdalu_orders') || '[]'); } catch { return []; }
-}
-function saveOrders(orders) {
-  localStorage.setItem('docesdalu_orders', JSON.stringify(orders));
-}
+// Funções loadAllOrders e saveOrders substituídas por Supabase globais no init
 function statusLabel(s) {
   return { pending:'⏳ Aguardando', confirmed:'✅ Confirmado', preparing:'🍫 Preparando', delivered:'🚚 Entregue', cancelled:'❌ Cancelado' }[s] || s;
 }
@@ -619,8 +597,8 @@ function formatPriceAdmin(v) {
   return new Intl.NumberFormat('pt-BR', { style:'currency', currency:'BRL' }).format(v || 0);
 }
 
-function renderAdminOrders() {
-  const orders = loadAllOrders().sort((a,b) => new Date(b.date) - new Date(a.date));
+async function renderAdminOrders() {
+  const orders = await window.supabaseClient.getOrders();
   const el = document.getElementById('admin-orders-list');
   if (orders.length === 0) {
     el.innerHTML = '<div style="text-align:center;padding:3rem;color:#999;"><div style="font-size:3rem;margin-bottom:0.5rem;">📭</div><p>Nenhum pedido ainda.</p><small>Os pedidos aparecerão aqui quando alguém finalizar uma compra.</small></div>';
@@ -662,26 +640,26 @@ function renderAdminOrders() {
   }).join('');
 }
 
-function updateOrderStatus(id, status) {
-  const orders = loadAllOrders();
-  const o = orders.find(x => x.id === id);
-  if (o) { o.status = status; saveOrders(orders); showAlert('orders-alert', `✓ Status do pedido #${id} atualizado!`, 'success'); }
+async function updateOrderStatus(id, status) {
+  await window.supabaseClient.updateOrderStatus(id, status);
+  showAlert('orders-alert', `✓ Status do pedido #${id} atualizado!`, 'success');
+  renderDashboard();
 }
 
-function clearAllOrders() {
+async function clearAllOrders() {
   if (!confirm('Tem certeza? Isso irá apagar todo o histórico de pedidos.')) return;
-  localStorage.removeItem('docesdalu_orders');
+  await window.supabaseClient.deleteOrders();
   renderAdminOrders();
   renderDashboard();
   showAlert('orders-alert', '✓ Histórico limpo.', 'success');
 }
 
 /* ---- DASHBOARD ---- */
-function renderDashboard() {
+async function renderDashboard() {
   const prods = products.filter(p => p.available);
   const minPrice = prods.length ? Math.min(...prods.map(p => p.price)) : 0;
   const maxPrice = prods.length ? Math.max(...prods.map(p => p.price)) : 0;
-  const orders = loadAllOrders();
+  const orders = await window.supabaseClient.getOrders();
   const pendingOrders = orders.filter(o => o.status === 'pending').length;
   const totalRevenue = orders.filter(o => o.status !== 'cancelled').reduce((s,o) => s + (o.total||0), 0);
   const grid = document.getElementById('stats-grid');
@@ -763,7 +741,7 @@ function handleImgUpload(id, input) {
   reader.readAsDataURL(file);
 }
 
-function saveProduct(id) {
+async function saveProduct(id) {
   const prod = products.find(p => p.id === id);
   if (!prod) return;
   prod.name        = document.getElementById(`name-${id}`).value.trim() || prod.name;
@@ -773,7 +751,7 @@ function saveProduct(id) {
   prod.shortDesc   = document.getElementById(`shortdesc-${id}`).value.trim();
   prod.description = document.getElementById(`desc-${id}`).value.trim();
   
-  localStorage.setItem('docesdalu_products', JSON.stringify(products));
+  await window.supabaseClient.saveProduct(prod);
   
   const badge = document.getElementById(`saved-${id}`);
   badge.classList.add('show');
@@ -782,27 +760,27 @@ function saveProduct(id) {
   showAlert('admin-alert', `✓ "${prod.name}" salvo com sucesso!`, 'success');
 }
 
-function toggleProduct(id) {
+async function toggleProduct(id) {
   const prod = products.find(p => p.id === id);
   if (!prod) return;
   prod.available = prod.available === false ? true : false;
-  localStorage.setItem('docesdalu_products', JSON.stringify(products));
+  await window.supabaseClient.saveProduct(prod);
   const btn = document.getElementById(`toggle-${id}`);
   btn.className = `btn-toggle ${prod.available ? 'active' : ''}`;
   btn.textContent = prod.available ? '✅ Disponível' : '⏸ Pausado';
   renderDashboard();
 }
 
-function deleteProduct(id) {
+async function deleteProduct(id) {
   if (!confirm('Tem certeza que deseja excluir este produto? Esta ação não pode ser desfeita.')) return;
   products = products.filter(p => p.id !== id);
-  localStorage.setItem('docesdalu_products', JSON.stringify(products));
+  await window.supabaseClient.deleteProduct(id);
   renderAdminProducts();
   renderDashboard();
   showAlert('admin-alert', '✓ Produto excluído.', 'success');
 }
 
-function addProduct() {
+async function addProduct() {
   const newId = 'produto-' + Date.now();
   const newProduct = {
     id: newId,
@@ -818,7 +796,7 @@ function addProduct() {
     highlight: false,
   };
   products.unshift(newProduct);
-  localStorage.setItem('docesdalu_products', JSON.stringify(products));
+  await window.supabaseClient.saveProduct(newProduct);
   renderAdminProducts();
   window.scrollTo({ top: 0, behavior: 'smooth' });
   showAlert('admin-alert', '✓ Novo produto criado! Edite e salve.', 'success');
@@ -835,7 +813,7 @@ function loadConfigForm() {
   document.getElementById('cfg-mp-key').value   = config.mercadoPagoPublicKey || '';
 }
 
-function saveAllConfig() {
+async function saveAllConfig() {
   config.storeName           = document.getElementById('cfg-name').value.trim();
   config.whatsapp            = document.getElementById('cfg-whatsapp').value.trim();
   config.instagram           = document.getElementById('cfg-instagram').value.trim();
@@ -844,7 +822,7 @@ function saveAllConfig() {
   config.pixKeyType          = document.getElementById('cfg-pix-type').value;
   config.mercadoPagoPublicKey = document.getElementById('cfg-mp-key').value.trim();
   
-  localStorage.setItem('docesdalu_config', JSON.stringify(config));
+  await window.supabaseClient.saveConfig(config);
   showAlert('config-alert', '✓ Configurações salvas com sucesso!', 'success');
 }
 
@@ -856,10 +834,15 @@ function showAlert(id, msg, type) {
 }
 
 /* ---- INIT ---- */
-renderDashboard();
-renderAdminProducts();
-renderAdminOrders();
-loadConfigForm();
+async function initAdmin() {
+  products = await window.supabaseClient.getProducts();
+  config = await window.supabaseClient.getConfig() || {};
+  renderDashboard();
+  renderAdminProducts();
+  renderAdminOrders();
+  loadConfigForm();
+}
+document.addEventListener('DOMContentLoaded', initAdmin);
 </script>
 </body>
 </html>

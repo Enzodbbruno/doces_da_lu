@@ -74,42 +74,45 @@ const DEFAULT_CONFIG = {
 };
 
 /**
- * Carrega produtos do localStorage (ou usa o padrão)
+ * Carrega produtos do Supabase (ou inicializa com o padrão se vazio)
  */
-function loadProducts() {
-  try {
-    const saved = localStorage.getItem('docesdalu_products');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-    }
-  } catch (e) {}
+async function loadProducts() {
+  const prods = await window.supabaseClient.getProducts();
+  if (prods && prods.length > 0) return prods;
+  
+  // Se estiver vazio, popula com os defaults
+  for (const p of DEFAULT_PRODUCTS) {
+    await window.supabaseClient.saveProduct(p);
+  }
   return JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
 }
 
 /**
- * Salva produtos no localStorage
+ * Salva produtos iterando e atualizando (usado pelo admin local)
  */
-function saveProducts(products) {
-  localStorage.setItem('docesdalu_products', JSON.stringify(products));
+async function saveProducts(products) {
+  for (const p of products) {
+    await window.supabaseClient.saveProduct(p);
+  }
 }
 
 /**
- * Carrega config do localStorage
+ * Carrega config do Supabase
  */
-function loadConfig() {
-  try {
-    const saved = localStorage.getItem('docesdalu_config');
-    if (saved) return { ...DEFAULT_CONFIG, ...JSON.parse(saved) };
-  } catch (e) {}
-  return { ...DEFAULT_CONFIG };
+async function loadConfig() {
+  let cfg = await window.supabaseClient.getConfig();
+  if (!cfg) {
+    cfg = { ...DEFAULT_CONFIG };
+    await window.supabaseClient.saveConfig(cfg);
+  }
+  return cfg;
 }
 
 /**
- * Salva config no localStorage
+ * Salva config no Supabase
  */
-function saveConfig(config) {
-  localStorage.setItem('docesdalu_config', JSON.stringify(config));
+async function saveConfig(config) {
+  await window.supabaseClient.saveConfig(config);
 }
 
 // Expõe globalmente

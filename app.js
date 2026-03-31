@@ -12,8 +12,8 @@ const FREE_SHIPPING_MIN_QTY = 2;    // Grátis a partir de 2 ovos (2 ou mais)
 /* =====================================================
    ESTADO GLOBAL
    ===================================================== */
-let products = STORE.loadProducts();
-let config = STORE.loadConfig();
+let products = [];
+let config = {};
 let cart = [];
 let currentProduct = null;
 let currentQty = 1;
@@ -23,7 +23,10 @@ let isPickup = false;
 /* =====================================================
    INIT
    ===================================================== */
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  products = await STORE.loadProducts();
+  config = await STORE.loadConfig();
+
   initParticles();
   initNavbar();
   initHeroParallax();
@@ -41,8 +44,8 @@ document.addEventListener('DOMContentLoaded', () => {
 /* =====================================================
    APLICAR CONFIG
    ===================================================== */
-function applyConfig() {
-  config = STORE.loadConfig();
+async function applyConfig() {
+  config = await STORE.loadConfig();
   const wa = document.getElementById('whatsapp-btn');
   if (wa) wa.href = `https://wa.me/${config.whatsapp}?text=Olá! Quero fazer um pedido de Ovos de Páscoa da ${config.storeName}!`;
   const ig = document.getElementById('instagram-btn');
@@ -192,10 +195,10 @@ function initReveal() {
 /* =====================================================
    RENDERIZAR PRODUTOS
    ===================================================== */
-function renderProducts() {
+async function renderProducts() {
   const grid = document.getElementById('products-grid');
   if (!grid) return;
-  products = STORE.loadProducts();
+  products = await STORE.loadProducts();
 
   grid.innerHTML = '';
   const available = products.filter(p => p.available !== false);
@@ -685,7 +688,7 @@ async function confirmOrder() {
   const shipping = getShippingFee();
   const total = getTotal();
 
-  // Salva pedido no localStorage
+  // Salva pedido no Supabase
   const order = {
     id: orderNum,
     date: new Date().toISOString(),
@@ -697,7 +700,7 @@ async function confirmOrder() {
     paymentMethod,
     status: 'pending',
   };
-  saveOrder(order, phone, cpf);
+  await window.supabaseClient.saveOrder(order);
 
   // Envia WhatsApp
   sendOrderWhatsApp({ name, phone, cpf, email, address, notes, orderNum, total, shipping });
@@ -724,29 +727,8 @@ async function confirmOrder() {
 }
 
 /* =====================================================
-   SALVAR / CARREGAR PEDIDOS
+   SALVAR / CARREGAR PEDIDOS - Removidos (usando Supabase)
    ===================================================== */
-function saveOrder(order, phone, cpf) {
-  const all = loadAllOrders();
-  all.push(order);
-  localStorage.setItem('docesdalu_orders', JSON.stringify(all));
-}
-
-function loadAllOrders() {
-  try {
-    return JSON.parse(localStorage.getItem('docesdalu_orders') || '[]');
-  } catch { return []; }
-}
-
-function findOrdersByKey(key) {
-  const k = key.replace(/\D/g, '');  // remove formatação
-  const all = loadAllOrders();
-  return all.filter(o => {
-    const phone = (o.customer?.phone || '').replace(/\D/g, '');
-    const cpf = (o.customer?.cpf || '').replace(/\D/g, '');
-    return phone.includes(k) || cpf === k;
-  });
-}
 
 /* =====================================================
    CONSULTA DE PEDIDOS
@@ -781,12 +763,15 @@ function closeOrderLookup() {
   }
 }
 
-function searchOrders() {
+async function searchOrders() {
   const val = document.getElementById('order-lookup-input').value.trim();
   const result = document.getElementById('order-lookup-result');
   if (!val) { result.innerHTML = '<p class="ol-empty">Digite seu CPF ou WhatsApp.</p>'; return; }
 
-  const orders = findOrdersByKey(val);
+  // Exibe indicativo de carregamento
+  result.innerHTML = '<div class="ol-empty"><p>Buscando no banco de dados...</p></div>';
+
+  const orders = await window.supabaseClient.findOrdersByKey(val);
   if (orders.length === 0) {
     result.innerHTML = '<div class="ol-empty"><span>🔍</span><p>Nenhum pedido encontrado.</p><small>Verifique o número digitado.</small></div>';
     return;
