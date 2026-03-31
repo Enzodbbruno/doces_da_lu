@@ -545,19 +545,13 @@
       </div>
 
       <div class="config-card">
-        <h3>💳 Mercado Pago</h3>
+        <h3>💳 Checkout Pro (Mercado Pago)</h3>
         <div class="config-grid">
-          <div class="config-group full">
-            <label for="cfg-mp-key">Chave Pública do Mercado Pago (Public Key)</label>
-            <input type="text" id="cfg-mp-key" placeholder="APP_USR-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" />
-          </div>
           <div class="config-group full" style="background: var(--lilac-pale); border-radius: var(--radius-sm); padding: 1rem;">
             <p style="font-size: 0.83rem; color: var(--text-mid); line-height: 1.7;">
-              📌 <strong>Como obter sua chave pública:</strong><br>
-              1. Acesse <strong>mercadopago.com.br/developers</strong><br>
-              2. Vá em <strong>Suas integrações → Criar aplicação</strong><br>
-              3. Copie a <strong>Public Key</strong> (começa com APP_USR) e cole acima<br>
-              4. A chave secreta (Access Token) deve ser usada somente no servidor
+              📌 <strong>Integração Backend Ativa:</strong><br>
+              A loja agora gera links seguros (Checkout Pro) comunicando diretamente com as <strong>Edge Functions</strong> do Supabase.<br>
+              <strong>Obrigatório:</strong> Certifique-se de que a variável <code>MP_ACCESS_TOKEN</code> (sua chave secreta que começa com APP_USR) está configurada no painel <em>Edge Functions > Secrets</em> do seu Supabase. Não informe chaves privadas nesta tela!
             </p>
           </div>
         </div>
@@ -810,7 +804,7 @@ function loadConfigForm() {
   document.getElementById('cfg-delivery').value = config.deliveryArea || '';
   document.getElementById('cfg-pix-key').value  = config.pixKey || '';
   document.getElementById('cfg-pix-type').value = config.pixKeyType || 'E-mail';
-  document.getElementById('cfg-mp-key').value   = config.mercadoPagoPublicKey || '';
+  // document.getElementById('cfg-mp-key').value = config.mercadoPagoPublicKey || '';
 }
 
 async function saveAllConfig() {
@@ -820,7 +814,7 @@ async function saveAllConfig() {
   config.deliveryArea        = document.getElementById('cfg-delivery').value.trim();
   config.pixKey              = document.getElementById('cfg-pix-key').value.trim();
   config.pixKeyType          = document.getElementById('cfg-pix-type').value;
-  config.mercadoPagoPublicKey = document.getElementById('cfg-mp-key').value.trim();
+  // config.mercadoPagoPublicKey = document.getElementById('cfg-mp-key').value.trim();
   
   await window.supabaseClient.saveConfig(config);
   showAlert('config-alert', '✓ Configurações salvas com sucesso!', 'success');

@@ -351,7 +351,7 @@
               <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
               <line x1="1" y1="10" x2="23" y2="10" />
             </svg>
-            Cartão de Crédito
+            Mercado Pago
           </button>
         </div>
 
@@ -369,41 +369,18 @@
           </div>
         </div>
 
-        <!-- Cartão -->
+        <!-- Mercado Pago -->
         <div class="pay-content hidden" id="credit-content">
-          <div class="credit-form">
-            <div class="mp-notice">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
-                <circle cx="12" cy="12" r="10" />
-                <line x1="12" y1="8" x2="12" y2="12" />
-                <line x1="12" y1="16" x2="12.01" y2="16" />
+          <div class="credit-form" style="text-align:center; padding: 2rem;">
+            <div class="mp-notice" style="margin-bottom: 2rem;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24" style="margin-right:0.5rem">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
               </svg>
-              <span>O pagamento por cartão é processado com segurança pelo <strong>Mercado Pago</strong>.</span>
+              <span>Ambiente 100% Seguro</span>
             </div>
-            <div class="form-group full">
-              <label for="cc-name">Nome no cartão *</label>
-              <input type="text" id="cc-name" placeholder="Nome como no cartão" />
-            </div>
-            <div class="form-group full">
-              <label for="cc-number">Número do cartão *</label>
-              <input type="text" id="cc-number" placeholder="0000 0000 0000 0000" maxlength="19" />
-            </div>
-            <div class="form-group">
-              <label for="cc-expiry">Validade *</label>
-              <input type="text" id="cc-expiry" placeholder="MM/AA" maxlength="5" />
-            </div>
-            <div class="form-group">
-              <label for="cc-cvv">CVV *</label>
-              <input type="text" id="cc-cvv" placeholder="123" maxlength="4" />
-            </div>
-            <div class="form-group full">
-              <label for="cc-installments">Parcelas</label>
-              <select id="cc-installments">
-                <option value="1">1x sem juros</option>
-                <option value="2">2x sem juros</option>
-                <option value="3">3x sem juros</option>
-              </select>
-            </div>
+            <img src="https://logospng.org/download/mercado-pago/logo-mercado-pago-icone-1024.png" width="60" alt="Mercado Pago" style="margin-bottom: 1rem;">
+            <h3 style="margin-bottom:0.5rem; color:var(--text-dark);">Pague com o Mercado Pago</h3>
+            <p style="color:var(--text-mid); font-size:0.9rem; line-height:1.4;">Ao confirmar, você será direcionado para o ambiente blindado do Mercado Pago, onde poderá pagar com Cartão de Crédito (até 12x), Pix ou Saldo da conta.</p>
           </div>
         </div>
 
@@ -472,6 +449,9 @@
   <!-- Toast -->
   <div class="toast-container" id="toast-container"></div>
 
+  <!-- SDK do Mercado Pago -->
+  <script src="https://sdk.mercadopago.com/js/v2"></script>
+  
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-client.js"></script>
   <script src="products.js"></script>

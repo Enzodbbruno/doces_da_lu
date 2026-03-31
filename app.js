@@ -684,15 +684,6 @@ async function confirmOrder() {
   const address = document.getElementById('cust-address').value.trim();
   const notes = document.getElementById('cust-notes').value.trim();
 
-  if (paymentMethod === 'credit') {
-    const ccName = document.getElementById('cc-name').value.trim();
-    const ccNumber = document.getElementById('cc-number').value.trim();
-    const ccExpiry = document.getElementById('cc-expiry').value.trim();
-    const ccCvv = document.getElementById('cc-cvv').value.trim();
-    if (!ccName || !ccNumber || !ccExpiry || !ccCvv) {
-      showToast('⚠️ Preencha os dados do cartão!'); return;
-    }
-  }
 
   const confirmBtn = document.getElementById('btn-confirm-order');
   confirmBtn.disabled = true;
@@ -720,17 +711,34 @@ async function confirmOrder() {
   };
   await window.supabaseClient.saveOrder(order);
 
-  // Envia WhatsApp
+  if (paymentMethod === 'credit') {
+    confirmBtn.textContent = 'Gerando link de pagamento...';
+    try {
+      const pref = await window.supabaseClient.createCheckoutPreference(order);
+      if (pref && pref.init_point) {
+        window.location.href = pref.init_point;
+        return;
+      }
+    } catch (err) {
+      console.error(err);
+      showToast('⚠️ Erro com o Mercado Pago. Tente novamente.');
+      confirmBtn.disabled = false;
+      confirmBtn.textContent = 'Confirmar Pedido 🎉';
+      return;
+    }
+  }
+
+  // Envia WhatsApp (Apenas para PIX, pois Cartão é processado online)
   sendOrderWhatsApp({ name, phone, cpf, email, address, notes, orderNum, total, shipping });
 
-  // Tela de confirmação
+  // Tela de confirmação manual PIX
   document.getElementById('confirm-name').textContent = name;
   document.getElementById('confirm-phone').textContent = phone;
   document.getElementById('confirm-order-num').textContent = orderNum;
 
   if (paymentMethod === 'pix') {
     document.getElementById('confirm-pix-box').style.display = 'block';
-    document.getElementById('confirm-pix-key').textContent = config.pixKey;
+    document.getElementById('confirm-pix-key').textContent = config.pixKey || 'Chave não cadastrada';
     document.getElementById('copy-pix').textContent = 'Copiar';
   } else {
     document.getElementById('confirm-pix-box').style.display = 'none';

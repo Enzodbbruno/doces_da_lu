@@ -153,6 +153,23 @@ const supabaseClient = {
     if (error) console.error('Erro ao atualizar status:', error);
     return !error;
   },
+
+  async createCheckoutPreference(order) {
+    const { data, error } = await supabaseApp.functions.invoke('create-preference', {
+      body: { 
+        items: order.items, 
+        customer: order.customer, 
+        orderId: order.id 
+      }
+    });
+
+    if (error || data?.error) {
+      console.error('Erro ao gerar pagamento MP:', error || data?.error);
+      throw new Error(error?.message || data?.error || 'Erro na criação do checkout.');
+    }
+
+    return data; // Retorna { id, init_point }
+  },
   
   async deleteOrders() {
      const { error } = await supabaseApp.from('orders').delete().neq('id', 'clear');
