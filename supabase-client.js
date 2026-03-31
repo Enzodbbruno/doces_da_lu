@@ -1,12 +1,12 @@
 // supabase-client.js
 const supabaseUrl = 'https://jzifqnexjbtxwnbbjsjw.supabase.co';
 const supabaseKey = 'sb_publishable_-_NSN0aYsjrCnw6wHI2C3w_Y4Sug849';
-const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+const supabaseApp = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 const supabaseClient = {
   // --- PRODUTOS ---
   async getProducts() {
-    const { data, error } = await supabase.from('products').select('*');
+    const { data, error } = await supabaseApp.from('products').select('*');
     if (error) {
       console.error('Erro ao buscar produtos:', error);
       return [];
@@ -45,18 +45,18 @@ const supabaseClient = {
     };
 
     // Usar upsert pelo slug
-    const { error } = await supabase.from('products').upsert(p, { onConflict: 'slug' });
+    const { error } = await supabaseApp.from('products').upsert(p, { onConflict: 'slug' });
     if (error) console.error('Erro ao salvar produto:', error);
   },
 
   async deleteProduct(slug) {
-    const { error } = await supabase.from('products').delete().eq('slug', slug);
+    const { error } = await supabaseApp.from('products').delete().eq('slug', slug);
     if (error) console.error('Erro ao deletar produto:', error);
   },
 
   // --- CONFIG ---
   async getConfig() {
-    const { data, error } = await supabase.from('config').select('*').limit(1).single();
+    const { data, error } = await supabaseApp.from('config').select('*').limit(1).single();
     if (error && error.code !== 'PGRST116') {
       console.error('Erro ao buscar config:', error);
       return null;
@@ -78,7 +78,7 @@ const supabaseClient = {
 
   async saveConfig(config) {
     // Primeiramente precisamos garantir se há um ID de config pré-existente
-    const { data: existing } = await supabase.from('config').select('id').limit(1).single();
+    const { data: existing } = await supabaseApp.from('config').select('id').limit(1).single();
     
     const cfg = {
       storename: config.storeName,
@@ -97,13 +97,13 @@ const supabaseClient = {
       cfg.id = existing.id;
     }
 
-    const { error } = await supabase.from('config').upsert(cfg);
+    const { error } = await supabaseApp.from('config').upsert(cfg);
     if (error) console.error('Erro ao salvar config:', error);
   },
 
   // --- ORDERS ---
   async getOrders() {
-    const { data, error } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
+    const { data, error } = await supabaseApp.from('orders').select('*').order('created_at', { ascending: false });
     if (error) {
       console.error('Erro ao buscar pedidos:', error);
       return [];
@@ -133,7 +133,7 @@ const supabaseClient = {
       paymentmethod: order.paymentMethod,
       status: order.status || 'pending'
     };
-    const { error } = await supabase.from('orders').upsert(o);
+    const { error } = await supabaseApp.from('orders').upsert(o);
     if (error) console.error('Erro ao salvar pedido:', error);
     return !error;
   },
@@ -149,13 +149,13 @@ const supabaseClient = {
   },
 
   async updateOrderStatus(id, status) {
-    const { error } = await supabase.from('orders').update({ status }).eq('id', id);
+    const { error } = await supabaseApp.from('orders').update({ status }).eq('id', id);
     if (error) console.error('Erro ao atualizar status:', error);
     return !error;
   },
   
   async deleteOrders() {
-     const { error } = await supabase.from('orders').delete().neq('id', 'clear');
+     const { error } = await supabaseApp.from('orders').delete().neq('id', 'clear');
      if (error) console.error('Erro deletando historico', error);
   }
 };
