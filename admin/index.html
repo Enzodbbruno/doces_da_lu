@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — Doces da LU</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --lilac: #9b72cf;
+      --lilac-light: #c4a7e7;
+      --lilac-pale: #f3eeff;
+      --lilac-mid: #b08ae0;
+      --dark: #1a1225;
+      --cream: #faf7f4;
+      --text-dark: #2d1f42;
+      --text-mid: #6b5b8a;
+      --gray-soft: #f7f4fb;
+      --success: #27ae60;
+      --danger: #e74c3c;
+      --radius-sm: 10px;
+      --radius-md: 16px;
+      --shadow-sm: 0 2px 12px rgba(155,114,207,0.10);
+      --shadow-md: 0 8px 32px rgba(155,114,207,0.18);
+    }
+    body { font-family: 'Inter', sans-serif; background: #f0ebf8; color: var(--text-dark); min-height: 100vh; }
+
+    /* Layout */
+    .admin-layout { display: flex; min-height: 100vh; }
+
+    /* Sidebar */
+    .sidebar {
+      width: 250px;
+      background: var(--dark);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      z-index: 100;
+      box-shadow: 4px 0 20px rgba(0,0,0,0.15);
+    }
+    .sidebar-logo {
+      padding: 1.5rem;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .sidebar-logo .brand-heart { color: var(--lilac-light); font-size: 1.4rem; }
+    .sidebar-logo .brand-name {
+      font-family: 'Playfair Display', serif;
+      color: white;
+      font-size: 1.1rem;
+    }
+    .sidebar-logo span.admin-tag {
+      display: block;
+      font-size: 0.65rem;
+      color: var(--lilac-light);
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-top: 1px;
+    }
+    .sidebar-menu { flex: 1; padding: 1rem 0; }
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.85rem 1.5rem;
+      color: rgba(255,255,255,0.55);
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+      transition: all 0.2s;
+    }
+    .sidebar-item:hover, .sidebar-item.active {
+      color: white;
+      background: rgba(155,114,207,0.15);
+      border-left: 3px solid var(--lilac);
+    }
+    .sidebar-item.active { color: var(--lilac-light); }
+    .sidebar-icon { font-size: 1.1rem; }
+    .sidebar-footer {
+      padding: 1.25rem;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+    .btn-view-store {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      background: linear-gradient(135deg, var(--lilac), var(--lilac-mid));
+      color: white;
+      text-decoration: none;
+      border-radius: var(--radius-sm);
+      padding: 0.7rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .btn-view-store:hover { opacity: 0.85; }
+
+    /* Main */
+    .main-content {
+      margin-left: 250px;
+      flex: 1;
+      padding: 2rem;
+      min-height: 100vh;
+    }
+
+    /* Header */
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+    }
+    .page-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem;
+      color: var(--text-dark);
+    }
+    .page-sub { color: var(--text-mid); font-size: 0.88rem; margin-top: 2px; }
+
+    /* Tab Sections */
+    .tab-section { display: none; }
+    .tab-section.active { display: block; }
+
+    /* Stats */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .stat-card {
+      background: white;
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      box-shadow: var(--shadow-sm);
+      border-left: 4px solid var(--lilac);
+    }
+    .stat-card-label { font-size: 0.77rem; font-weight: 600; color: var(--text-mid); text-transform: uppercase; letter-spacing: 0.06em; }
+    .stat-card-value { font-family: 'Playfair Display', serif; font-size: 1.8rem; color: var(--text-dark); margin-top: 4px; }
+
+    /* Produtos */
+    .products-admin-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.25rem;
+    }
+    .product-admin-card {
+      background: white;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid rgba(155,114,207,0.08);
+      transition: box-shadow 0.2s;
+    }
+    .product-admin-card:hover { box-shadow: var(--shadow-md); }
+    .product-admin-img {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      background: var(--lilac-pale);
+    }
+    .product-admin-body { padding: 1.25rem; }
+    .product-admin-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      color: var(--text-dark);
+      margin-bottom: 0.5rem;
+    }
+    .product-admin-row {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .admin-input {
+      border: 1.5px solid var(--lilac-pale);
+      border-radius: var(--radius-sm);
+      padding: 0.5rem 0.75rem;
+      font-size: 0.88rem;
+      font-family: 'Inter', sans-serif;
+      color: var(--text-dark);
+      background: var(--gray-soft);
+      outline: none;
+      transition: all 0.2s;
+    }
+    .admin-input:focus { border-color: var(--lilac); background: white; box-shadow: 0 0 0 3px rgba(155,114,207,0.1); }
+    .admin-input.price-input { width: 110px; font-weight: 700; color: var(--lilac); }
+    .admin-input.weight-input { width: 80px; }
+    .admin-input.full-input { width: 100%; margin-bottom: 0.5rem; }
+    .admin-input.textarea-input { resize: vertical; min-height: 64px; }
+
+    .admin-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-mid);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      display: block;
+      margin-bottom: 3px;
+      margin-top: 0.6rem;
+    }
+
+    .product-admin-actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--lilac-pale);
+      align-items: center;
+    }
+    .btn-save {
+      background: linear-gradient(135deg, var(--lilac), var(--lilac-mid));
+      color: white;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 0.55rem 1.1rem;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'Inter', sans-serif;
+    }
+    .btn-save:hover { opacity: 0.85; transform: translateY(-1px); }
+    .btn-toggle {
+      background: var(--gray-soft);
+      color: var(--text-mid);
+      border: 1.5px solid var(--lilac-pale);
+      border-radius: var(--radius-sm);
+      padding: 0.5rem 0.9rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'Inter', sans-serif;
+    }
+    .btn-toggle.active { background: #e8f8ef; border-color: var(--success); color: var(--success); }
+    .btn-delete {
+      background: none;
+      border: 1.5px solid #fde;
+      color: var(--danger);
+      border-radius: var(--radius-sm);
+      padding: 0.5rem 0.75rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'Inter', sans-serif;
+      margin-left: auto;
+    }
+    .btn-delete:hover { background: #fde; }
+
+    /* Add product */
+    .add-product-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: linear-gradient(135deg, var(--lilac), var(--lilac-mid));
+      color: white;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 0.7rem 1.4rem;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'Inter', sans-serif;
+      margin-bottom: 1.5rem;
+    }
+    .add-product-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+
+    /* Config section */
+    .config-card {
+      background: white;
+      border-radius: var(--radius-md);
+      padding: 1.75rem;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 1.25rem;
+    }
+    .config-card h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.15rem;
+      color: var(--text-dark);
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .config-group { display: flex; flex-direction: column; gap: 0.35rem; }
+    .config-group.full { grid-column: 1 / -1; }
+    .config-group label { font-size: 0.8rem; font-weight: 600; color: var(--text-mid); }
+    .config-group input, .config-group select {
+      border: 1.5px solid var(--lilac-pale);
+      border-radius: var(--radius-sm);
+      padding: 0.65rem 0.9rem;
+      font-size: 0.9rem;
+      font-family: 'Inter', sans-serif;
+      color: var(--text-dark);
+      background: var(--gray-soft);
+      outline: none;
+      transition: all 0.2s;
+    }
+    .config-group input:focus, .config-group select:focus {
+      border-color: var(--lilac);
+      background: white;
+      box-shadow: 0 0 0 3px rgba(155,114,207,0.1);
+    }
+    .btn-save-config {
+      background: linear-gradient(135deg, var(--lilac), var(--lilac-mid));
+      color: white;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 0.8rem 2rem;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'Inter', sans-serif;
+      margin-top: 1rem;
+    }
+    .btn-save-config:hover { opacity: 0.85; }
+
+    /* Alert */
+    .alert {
+      display: none;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.8rem 1.1rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.88rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+    .alert.success { background: #e8f8ef; color: var(--success); border: 1px solid #b2dfdb; display: flex; }
+    .alert.error { background: #fde; color: var(--danger); border: 1px solid #f9c; display: flex; }
+
+    /* Image upload */
+    .img-upload-wrap {
+      border: 2px dashed var(--lilac-pale);
+      border-radius: var(--radius-sm);
+      padding: 1rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+      margin-top: 0.5rem;
+    }
+    .img-upload-wrap:hover { border-color: var(--lilac); background: var(--lilac-pale); }
+    .img-upload-wrap input[type=file] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+    }
+    .img-upload-label { font-size: 0.8rem; color: var(--text-mid); }
+    .img-preview {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+      border-radius: var(--radius-sm);
+      margin-bottom: 0.5rem;
+      display: none;
+    }
+
+    /* Saved badge */
+    .saved-badge {
+      display: none;
+      background: #e8f8ef;
+      color: var(--success);
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.25rem 0.6rem;
+      border-radius: 999px;
+    }
+    .saved-badge.show { display: inline-block; }
+
+    @media (max-width: 768px) {
+      .sidebar { width: 64px; }
+      .sidebar-item span:not(.sidebar-icon) { display: none; }
+      .sidebar-logo .brand-name, .sidebar-logo .admin-tag { display: none; }
+      .main-content { margin-left: 64px; padding: 1rem; }
+      .config-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="admin-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <span class="brand-heart">♥</span>
+      <div>
+        <div class="brand-name">Doces da LU</div>
+        <span class="admin-tag">Painel Admin</span>
+      </div>
+    </div>
+    <nav class="sidebar-menu">
+      <button class="sidebar-item active" onclick="showTab('dashboard')" id="tab-dashboard">
+        <span class="sidebar-icon">📊</span>
+        <span>Dashboard</span>
+      </button>
+      <button class="sidebar-item" onclick="showTab('products')" id="tab-products">
+        <span class="sidebar-icon">🥚</span>
+        <span>Produtos</span>
+      </button>
+      <button class="sidebar-item" onclick="showTab('orders')" id="tab-orders">
+        <span class="sidebar-icon">📦</span>
+        <span>Pedidos</span>
+      </button>
+      <button class="sidebar-item" onclick="showTab('config')" id="tab-config">
+        <span class="sidebar-icon">⚙️</span>
+        <span>Configurações</span>
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <a href="../index.html" class="btn-view-store" target="_blank">
+        👁 Ver Loja
+      </a>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main-content">
+
+    <!-- DASHBOARD -->
+    <section class="tab-section active" id="section-dashboard">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Dashboard 📊</h1>
+          <p class="page-sub">Bem-vinda ao painel da Doces da LU, Lu! 💜</p>
+        </div>
+      </div>
+      <div class="stats-grid" id="stats-grid">
+        <!-- JS injeta -->
+      </div>
+      <div class="config-card">
+        <h3>🚀 Como usar este painel</h3>
+        <ul style="color: var(--text-mid); font-size: 0.88rem; line-height: 2; padding-left: 1.25rem;">
+          <li><strong>Produtos:</strong> Edite o nome, preço, descrição e peso de cada ovo. Clique em Salvar.</li>
+          <li><strong>Disponibilidade:</strong> Use o botão "Disponível/Pausado" para ativar ou desativar produtos.</li>
+          <li><strong>Configurações:</strong> Configure sua chave PIX, WhatsApp e chave do Mercado Pago.</li>
+          <li><strong>Imagens:</strong> Para trocar as fotos, faça upload de uma nova imagem no card do produto.</li>
+          <li><strong>Mercado Pago:</strong> Insira sua chave pública MP nas Configurações para pagamento real.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- PRODUTOS -->
+    <section class="tab-section" id="section-products">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Ovos de Páscoa 🥚</h1>
+          <p class="page-sub">Gerencie seu cardápio de ovos</p>
+        </div>
+        <button class="add-product-btn" onclick="addProduct()">
+          + Novo Produto
+        </button>
+      </div>
+      <div id="admin-alert" class="alert"></div>
+      <div class="products-admin-grid" id="admin-products-grid">
+        <!-- JS injeta -->
+      </div>
+    </section>
+
+    <!-- PEDIDOS -->
+    <section class="tab-section" id="section-orders">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Pedidos 📦</h1>
+          <p class="page-sub">Acompanhe e gerencie todos os pedidos recebidos</p>
+        </div>
+        <button class="add-product-btn" onclick="clearAllOrders()" style="background: linear-gradient(135deg, #e74c3c, #c0392b);">
+          🗑 Limpar Histórico
+        </button>
+      </div>
+      <div id="orders-alert" class="alert"></div>
+      <div id="admin-orders-list"></div>
+    </section>
+
+    <!-- CONFIG -->
+    <section class="tab-section" id="section-config">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Configurações ⚙️</h1>
+          <p class="page-sub">Configure a loja e os pagamentos</p>
+        </div>
+      </div>
+      <div id="config-alert" class="alert"></div>
+
+      <div class="config-card">
+        <h3>🏪 Informações da Loja</h3>
+        <div class="config-grid">
+          <div class="config-group">
+            <label for="cfg-name">Nome da Loja</label>
+            <input type="text" id="cfg-name" placeholder="Doces da LU" />
+          </div>
+          <div class="config-group">
+            <label for="cfg-delivery">Área de Entrega</label>
+            <input type="text" id="cfg-delivery" placeholder="Marabá/PA" />
+          </div>
+          <div class="config-group">
+            <label for="cfg-whatsapp">WhatsApp (com DDI, sem +)</label>
+            <input type="text" id="cfg-whatsapp" placeholder="5594999999999" />
+          </div>
+          <div class="config-group">
+            <label for="cfg-instagram">Instagram (sem @)</label>
+            <input type="text" id="cfg-instagram" placeholder="docesdalu" />
+          </div>
+        </div>
+      </div>
+
+      <div class="config-card">
+        <h3>💠 Pagamento PIX</h3>
+        <div class="config-grid">
+          <div class="config-group">
+            <label for="cfg-pix-key">Chave PIX</label>
+            <input type="text" id="cfg-pix-key" placeholder="seu@email.com ou CPF ou telefone" />
+          </div>
+          <div class="config-group">
+            <label for="cfg-pix-type">Tipo da Chave</label>
+            <select id="cfg-pix-type">
+              <option value="E-mail">E-mail</option>
+              <option value="CPF">CPF</option>
+              <option value="Telefone">Telefone</option>
+              <option value="CNPJ">CNPJ</option>
+              <option value="Chave Aleatória">Chave Aleatória</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="config-card">
+        <h3>💳 Mercado Pago</h3>
+        <div class="config-grid">
+          <div class="config-group full">
+            <label for="cfg-mp-key">Chave Pública do Mercado Pago (Public Key)</label>
+            <input type="text" id="cfg-mp-key" placeholder="APP_USR-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" />
+          </div>
+          <div class="config-group full" style="background: var(--lilac-pale); border-radius: var(--radius-sm); padding: 1rem;">
+            <p style="font-size: 0.83rem; color: var(--text-mid); line-height: 1.7;">
+              📌 <strong>Como obter sua chave pública:</strong><br>
+              1. Acesse <strong>mercadopago.com.br/developers</strong><br>
+              2. Vá em <strong>Suas integrações → Criar aplicação</strong><br>
+              3. Copie a <strong>Public Key</strong> (começa com APP_USR) e cole acima<br>
+              4. A chave secreta (Access Token) deve ser usada somente no servidor
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-save-config" onclick="saveAllConfig()">💾 Salvar Configurações</button>
+    </section>
+
+  </main>
+</div>
+
+<script>
+// Carrega dados
+const products_data = JSON.parse(localStorage.getItem('docesdalu_products') || '[]');
+const config_data = JSON.parse(localStorage.getItem('docesdalu_config') || '{}');
+
+const DEFAULT_CONFIG = {
+  storeName: "Doces da LU",
+  whatsapp: "5594999999999",
+  instagram: "docesdalu",
+  pixKey: "docesdalu@email.com",
+  pixKeyType: "E-mail",
+  deliveryArea: "Marabá/PA",
+  mercadoPagoPublicKey: "",
+};
+
+const DEFAULT_PRODUCTS = [
+  { id:"bolo-cenoura", name:"Bolo de Cenoura", emoji:"🍫", badge:"Mais Pedido", description:"Casca de chocolate branco, com recheio de creme de Nutella e pedaços de Kinder Bueno.", shortDesc:"Casca de choc. branco, creme de Nutella e Kinder Bueno", price:80, weight:"350g", image:"../images/ovo_bolo_cenoura.png", available:true, highlight:true },
+  { id:"pistache", name:"Pistache", emoji:"🤍", badge:"Novidade", description:"Casca de chocolate branco com gotas de chocolate e recheio de chocolate branco com coco.", shortDesc:"Casca de choc. branco com gotas e recheio de choc. branco com coco", price:60, weight:"350g", image:"../images/ovo_pistache.png", available:true, highlight:false },
+  { id:"dois-amores", name:"Dois Amores", emoji:"💛", badge:"Clássico", description:"Casca de chocolate ao leite com recheio de brigadeiro belga e chocolate granulado.", shortDesc:"Casca de choc. ao leite com brigadeiro belga e granulado", price:60, weight:"350g", image:"../images/ovo_dois_amores.png", available:true, highlight:false },
+  { id:"trufa-premium", name:"Trufa Premium", emoji:"🖤", badge:"Premium", description:"Casca de chocolate amargo 70% cacau recheado com trufas artesanais cobertas de cacau em pó.", shortDesc:"Casca amarga 70% cacau com trufas artesanais e cacau em pó", price:90, weight:"350g", image:"../images/ovo_trufa.png", available:true, highlight:false },
+];
+
+let products = products_data.length ? products_data : DEFAULT_PRODUCTS;
+let config = { ...DEFAULT_CONFIG, ...config_data };
+
+/* ---- TAB NAV ---- */
+function showTab(tab) {
+  document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('section-' + tab).classList.add('active');
+  document.getElementById('tab-' + tab).classList.add('active');
+}
+
+/* ---- PEDIDOS ---- */
+function loadAllOrders() {
+  try { return JSON.parse(localStorage.getItem('docesdalu_orders') || '[]'); } catch { return []; }
+}
+function saveOrders(orders) {
+  localStorage.setItem('docesdalu_orders', JSON.stringify(orders));
+}
+function statusLabel(s) {
+  return { pending:'⏳ Aguardando', confirmed:'✅ Confirmado', preparing:'🍫 Preparando', delivered:'🚚 Entregue', cancelled:'❌ Cancelado' }[s] || s;
+}
+function statusClass(s) {
+  return { pending:'ol-status-pending', confirmed:'ol-status-confirmed', preparing:'ol-status-preparing', delivered:'ol-status-delivered', cancelled:'ol-status-cancelled' }[s] || '';
+}
+function formatPriceAdmin(v) {
+  return new Intl.NumberFormat('pt-BR', { style:'currency', currency:'BRL' }).format(v || 0);
+}
+
+function renderAdminOrders() {
+  const orders = loadAllOrders().sort((a,b) => new Date(b.date) - new Date(a.date));
+  const el = document.getElementById('admin-orders-list');
+  if (orders.length === 0) {
+    el.innerHTML = '<div style="text-align:center;padding:3rem;color:#999;"><div style="font-size:3rem;margin-bottom:0.5rem;">📭</div><p>Nenhum pedido ainda.</p><small>Os pedidos aparecerão aqui quando alguém finalizar uma compra.</small></div>';
+    return;
+  }
+  el.innerHTML = orders.map((o, i) => {
+    const date = new Date(o.date).toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+    const items = o.items?.map(it => `${it.qty}× ${it.name}`).join(', ') || '';
+    const phone = o.customer?.phone || '';
+    const cpf = o.customer?.cpf || '';
+    const addr = o.customer?.address || '';
+    const method = o.paymentMethod === 'pix' ? '💠 PIX' : '💳 Cartão';
+    return `
+      <div class="config-card" style="margin-bottom:1rem;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.75rem;">
+          <div>
+            <span style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--lilac);">#${o.id}</span>
+            <span style="font-size:0.78rem;color:#999;margin-left:0.75rem;">${date}</span>
+          </div>
+          <div style="display:flex;gap:0.5rem;align-items:center;">
+            <select onchange="updateOrderStatus('${o.id}', this.value)" style="border:1.5px solid var(--lilac-pale);border-radius:8px;padding:0.35rem 0.6rem;font-size:0.82rem;font-family:Inter,sans-serif;background:var(--gray-soft);color:var(--text-dark);outline:none;">
+              ${['pending','confirmed','preparing','delivered','cancelled'].map(s => `<option value="${s}" ${o.status===s?'selected':''}>${statusLabel(s)}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+        <div style="font-size:0.85rem;color:var(--text-mid);margin-bottom:0.5rem">
+          <strong>${o.customer?.name || 'Cliente'}</strong>
+          ${phone ? ` · 📱 ${phone}` : ''}
+          ${cpf ? ` · 🪪 ${cpf}` : ''}
+        </div>
+        ${addr ? `<div style="font-size:0.8rem;color:#888;margin-bottom:0.5rem;">📍 ${addr}</div>` : ''}
+        <div style="font-size:0.85rem;color:var(--text-dark);margin-bottom:0.5rem;">${items}</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding-top:0.6rem;border-top:1px solid var(--lilac-pale);font-size:0.85rem;">
+          <span style="color:#888;">${method} · Frete: ${o.shipping===0?'Grátis 🎉':formatPriceAdmin(o.shipping)}</span>
+          <strong style="color:var(--lilac);font-size:1rem;">${formatPriceAdmin(o.total)}</strong>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function updateOrderStatus(id, status) {
+  const orders = loadAllOrders();
+  const o = orders.find(x => x.id === id);
+  if (o) { o.status = status; saveOrders(orders); showAlert('orders-alert', `✓ Status do pedido #${id} atualizado!`, 'success'); }
+}
+
+function clearAllOrders() {
+  if (!confirm('Tem certeza? Isso irá apagar todo o histórico de pedidos.')) return;
+  localStorage.removeItem('docesdalu_orders');
+  renderAdminOrders();
+  renderDashboard();
+  showAlert('orders-alert', '✓ Histórico limpo.', 'success');
+}
+
+/* ---- DASHBOARD ---- */
+function renderDashboard() {
+  const prods = products.filter(p => p.available);
+  const minPrice = prods.length ? Math.min(...prods.map(p => p.price)) : 0;
+  const maxPrice = prods.length ? Math.max(...prods.map(p => p.price)) : 0;
+  const orders = loadAllOrders();
+  const pendingOrders = orders.filter(o => o.status === 'pending').length;
+  const totalRevenue = orders.filter(o => o.status !== 'cancelled').reduce((s,o) => s + (o.total||0), 0);
+  const grid = document.getElementById('stats-grid');
+  grid.innerHTML = `
+    <div class="stat-card"><div class="stat-card-label">Produtos Ativos</div><div class="stat-card-value">${prods.length}</div></div>
+    <div class="stat-card"><div class="stat-card-label">Menor Preço</div><div class="stat-card-value">R$ ${minPrice},00</div></div>
+    <div class="stat-card"><div class="stat-card-label">Maior Preço</div><div class="stat-card-value">R$ ${maxPrice},00</div></div>
+    <div class="stat-card"><div class="stat-card-label">Total Produtos</div><div class="stat-card-value">${products.length}</div></div>
+    <div class="stat-card" style="border-left-color:#f39c12;"><div class="stat-card-label">Pedidos Pendentes</div><div class="stat-card-value">${pendingOrders}</div></div>
+    <div class="stat-card" style="border-left-color:#27ae60;"><div class="stat-card-label">Total Pedidos</div><div class="stat-card-value">${orders.length}</div></div>
+    <div class="stat-card" style="border-left-color:#27ae60;"><div class="stat-card-label">Receita Total</div><div class="stat-card-value" style="font-size:1.2rem;">${formatPriceAdmin(totalRevenue)}</div></div>
+  `;
+}
+
+/* ---- PRODUTOS ADMIN ---- */
+function renderAdminProducts() {
+  const grid = document.getElementById('admin-products-grid');
+  grid.innerHTML = '';
+  products.forEach((p, idx) => {
+    const card = document.createElement('div');
+    card.className = 'product-admin-card';
+    card.id = `product-card-${p.id}`;
+    card.innerHTML = `
+      <img src="${p.image}" alt="${p.name}" class="product-admin-img" id="img-${p.id}"
+        onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 300 160%22><rect fill=%22%23f3eeff%22 width=%22300%22 height=%22160%22/><text x=%2250%%22 y=%2255%%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-size=%2260%22>${p.emoji || '🥚'}</text></svg>'"
+      />
+      <div class="product-admin-body">
+        <h3 class="product-admin-name">${p.name} <span class="saved-badge" id="saved-${p.id}">✓ Salvo</span></h3>
+        
+        <label class="admin-label">Nome</label>
+        <input type="text" class="admin-input full-input" id="name-${p.id}" value="${p.name}" />
+
+        <label class="admin-label">Preço (R$)</label>
+        <div class="product-admin-row">
+          <input type="number" class="admin-input price-input" id="price-${p.id}" value="${p.price}" step="0.01" min="0" />
+          <input type="text" class="admin-input weight-input" id="weight-${p.id}" value="${p.weight || ''}" placeholder="350g" />
+        </div>
+
+        <label class="admin-label">Badge</label>
+        <input type="text" class="admin-input full-input" id="badge-${p.id}" value="${p.badge || ''}" placeholder="Ex: Mais Pedido, Novidade..." />
+
+        <label class="admin-label">Descrição curta</label>
+        <input type="text" class="admin-input full-input" id="shortdesc-${p.id}" value="${p.shortDesc || ''}" placeholder="Aparece no card da loja" />
+
+        <label class="admin-label">Descrição completa</label>
+        <textarea class="admin-input full-input textarea-input" id="desc-${p.id}">${p.description}</textarea>
+
+        <label class="admin-label">Imagem (upload)</label>
+        <div class="img-upload-wrap" onclick="document.getElementById('file-${p.id}').click()">
+          <input type="file" id="file-${p.id}" accept="image/*" onchange="handleImgUpload('${p.id}', this)" />
+          <span class="img-upload-label">📷 Clique para trocar a imagem</span>
+        </div>
+
+        <div class="product-admin-actions">
+          <button class="btn-save" onclick="saveProduct('${p.id}')">💾 Salvar</button>
+          <button class="btn-toggle ${p.available !== false ? 'active' : ''}" 
+            id="toggle-${p.id}"
+            onclick="toggleProduct('${p.id}')">
+            ${p.available !== false ? '✅ Disponível' : '⏸ Pausado'}
+          </button>
+          <button class="btn-delete" onclick="deleteProduct('${p.id}')">🗑 Excluir</button>
+        </div>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function handleImgUpload(id, input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const imgEl = document.getElementById(`img-${id}`);
+    if (imgEl) imgEl.src = e.target.result;
+    const prod = products.find(p => p.id === id);
+    if (prod) prod.image = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function saveProduct(id) {
+  const prod = products.find(p => p.id === id);
+  if (!prod) return;
+  prod.name        = document.getElementById(`name-${id}`).value.trim() || prod.name;
+  prod.price       = parseFloat(document.getElementById(`price-${id}`).value) || prod.price;
+  prod.weight      = document.getElementById(`weight-${id}`).value.trim();
+  prod.badge       = document.getElementById(`badge-${id}`).value.trim();
+  prod.shortDesc   = document.getElementById(`shortdesc-${id}`).value.trim();
+  prod.description = document.getElementById(`desc-${id}`).value.trim();
+  
+  localStorage.setItem('docesdalu_products', JSON.stringify(products));
+  
+  const badge = document.getElementById(`saved-${id}`);
+  badge.classList.add('show');
+  setTimeout(() => badge.classList.remove('show'), 2500);
+  renderDashboard();
+  showAlert('admin-alert', `✓ "${prod.name}" salvo com sucesso!`, 'success');
+}
+
+function toggleProduct(id) {
+  const prod = products.find(p => p.id === id);
+  if (!prod) return;
+  prod.available = prod.available === false ? true : false;
+  localStorage.setItem('docesdalu_products', JSON.stringify(products));
+  const btn = document.getElementById(`toggle-${id}`);
+  btn.className = `btn-toggle ${prod.available ? 'active' : ''}`;
+  btn.textContent = prod.available ? '✅ Disponível' : '⏸ Pausado';
+  renderDashboard();
+}
+
+function deleteProduct(id) {
+  if (!confirm('Tem certeza que deseja excluir este produto? Esta ação não pode ser desfeita.')) return;
+  products = products.filter(p => p.id !== id);
+  localStorage.setItem('docesdalu_products', JSON.stringify(products));
+  renderAdminProducts();
+  renderDashboard();
+  showAlert('admin-alert', '✓ Produto excluído.', 'success');
+}
+
+function addProduct() {
+  const newId = 'produto-' + Date.now();
+  const newProduct = {
+    id: newId,
+    name: 'Novo Ovo',
+    emoji: '🥚',
+    badge: 'Novo',
+    description: 'Descrição do ovo de páscoa.',
+    shortDesc: 'Descrição curta',
+    price: 60,
+    weight: '350g',
+    image: '../images/ovo_bolo_cenoura.png',
+    available: true,
+    highlight: false,
+  };
+  products.unshift(newProduct);
+  localStorage.setItem('docesdalu_products', JSON.stringify(products));
+  renderAdminProducts();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  showAlert('admin-alert', '✓ Novo produto criado! Edite e salve.', 'success');
+}
+
+/* ---- CONFIG ---- */
+function loadConfigForm() {
+  document.getElementById('cfg-name').value     = config.storeName || '';
+  document.getElementById('cfg-whatsapp').value = config.whatsapp || '';
+  document.getElementById('cfg-instagram').value = config.instagram || '';
+  document.getElementById('cfg-delivery').value = config.deliveryArea || '';
+  document.getElementById('cfg-pix-key').value  = config.pixKey || '';
+  document.getElementById('cfg-pix-type').value = config.pixKeyType || 'E-mail';
+  document.getElementById('cfg-mp-key').value   = config.mercadoPagoPublicKey || '';
+}
+
+function saveAllConfig() {
+  config.storeName           = document.getElementById('cfg-name').value.trim();
+  config.whatsapp            = document.getElementById('cfg-whatsapp').value.trim();
+  config.instagram           = document.getElementById('cfg-instagram').value.trim();
+  config.deliveryArea        = document.getElementById('cfg-delivery').value.trim();
+  config.pixKey              = document.getElementById('cfg-pix-key').value.trim();
+  config.pixKeyType          = document.getElementById('cfg-pix-type').value;
+  config.mercadoPagoPublicKey = document.getElementById('cfg-mp-key').value.trim();
+  
+  localStorage.setItem('docesdalu_config', JSON.stringify(config));
+  showAlert('config-alert', '✓ Configurações salvas com sucesso!', 'success');
+}
+
+function showAlert(id, msg, type) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.className = `alert ${type}`;
+  setTimeout(() => { el.className = 'alert'; }, 4000);
+}
+
+/* ---- INIT ---- */
+renderDashboard();
+renderAdminProducts();
+renderAdminOrders();
+loadConfigForm();
+</script>
+</body>
+</html>
