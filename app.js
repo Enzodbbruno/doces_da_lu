@@ -42,21 +42,50 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function fetchAndRender() {
   const grid = document.getElementById('products-grid');
-  if (grid) {
-    grid.innerHTML = `
-      <div style="text-align: center; width: 100%; grid-column: 1 / -1; padding: 3rem 1rem;">
-        <div style="font-size: 3rem; display: inline-block; animation: bounce 0.8s infinite alternate ease-in-out;">🚚</div>
-        <p style="color: var(--text-mid); margin-top: 1rem; font-weight: 600;">Preparando a vitrine...</p>
-      </div>
-      <style>@keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-15px); } }</style>
-    `;
+  
+  // 1. Tentar carregar do cache instantaneamente
+  try {
+    const cachedProducts = JSON.parse(localStorage.getItem('doces_cache_products') || "[]");
+    const cachedConfig = JSON.parse(localStorage.getItem('doces_cache_config') || "{}");
+    
+    if (cachedProducts.length > 0) {
+      products = cachedProducts;
+      config = cachedConfig;
+      applyConfig();
+      renderProducts();
+    } else if (grid) {
+      // Se não tem cache, mostrar animação de carregamento
+      grid.innerHTML = `
+        <div style="text-align: center; width: 100%; grid-column: 1 / -1; padding: 3rem 1rem;">
+          <div style="font-size: 3rem; display: inline-block; animation: bounce 0.8s infinite alternate ease-in-out;">🚚</div>
+          <p style="color: var(--text-mid); margin-top: 1rem; font-weight: 600;">Acessando o banco de dados...</p>
+        </div>
+        <style>@keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-15px); } }</style>
+      `;
+    }
+  } catch (e) {}
+
+  // 2. Buscar dados atualizados do banco em paralelo (muito mais rápido)
+  try {
+    const [freshProducts, freshConfig] = await Promise.all([
+      STORE.loadProducts(),
+      STORE.loadConfig()
+    ]);
+    
+    // Atualizar variáveis globais
+    products = freshProducts;
+    config = freshConfig;
+
+    // Atualizar cache silenciosamente
+    localStorage.setItem('doces_cache_products', JSON.stringify(products));
+    localStorage.setItem('doces_cache_config', JSON.stringify(config));
+
+    // Refazer interface com os dados reais/mais recentes (imperceptível)
+    applyConfig();
+    renderProducts();
+  } catch (err) {
+    if(grid && products.length === 0) grid.innerHTML = '<p style="text-align:center;width:100%;color:red;">Falha ao conectar no servidor.</p>';
   }
-
-  products = await STORE.loadProducts();
-  config = await STORE.loadConfig();
-
-  applyConfig();
-  renderProducts();
 }
 
 /* =====================================================
