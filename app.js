@@ -23,23 +23,41 @@ let isPickup = false;
 /* =====================================================
    INIT
    ===================================================== */
-document.addEventListener('DOMContentLoaded', async () => {
-  products = await STORE.loadProducts();
-  config = await STORE.loadConfig();
-
+document.addEventListener('DOMContentLoaded', () => {
+  // 1. Inicializa o UI para não deixar a tela "travada"
   initParticles();
   initNavbar();
   initHeroParallax();
   initChocoParticles();
-  renderProducts();
   initReveal();
   initCart();
   initModal();
   initCheckout();
   initOrderLookup();
-  applyConfig();
   duplicateBanner();
+
+  // 2. Busca e renderiza os dados
+  fetchAndRender();
 });
+
+async function fetchAndRender() {
+  const grid = document.getElementById('products-grid');
+  if (grid) {
+    grid.innerHTML = `
+      <div style="text-align: center; width: 100%; grid-column: 1 / -1; padding: 3rem 1rem;">
+        <div style="font-size: 3rem; display: inline-block; animation: bounce 0.8s infinite alternate ease-in-out;">🚚</div>
+        <p style="color: var(--text-mid); margin-top: 1rem; font-weight: 600;">Preparando a vitrine...</p>
+      </div>
+      <style>@keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-15px); } }</style>
+    `;
+  }
+
+  products = await STORE.loadProducts();
+  config = await STORE.loadConfig();
+
+  applyConfig();
+  renderProducts();
+}
 
 /* =====================================================
    APLICAR CONFIG
