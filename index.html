@@ -336,41 +336,12 @@
         <button class="btn-to-payment" id="btn-to-payment">Ir para Pagamento →</button>
       </div>
 
-      <!-- Step 2: Pagamento -->
+      <!-- Step 2: Revisão e Pagamento -->
       <div class="checkout-step-content hidden" id="checkout-step-2">
-        <h2 class="checkout-title">Forma de Pagamento</h2>
-        <div class="payment-tabs">
-          <button class="pay-tab active" id="tab-pix" data-method="pix">
-            <img
-              src="https://upload.wikimedia.org/wikipedia/commons/a/a2/Logo%E2%80%93pix_powered_by_Banco_Central_%28Brazil%2C_2020%29.svg"
-              alt="PIX" height="28" />
-            PIX
-          </button>
-          <button class="pay-tab" id="tab-credit" data-method="credit">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22">
-              <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
-              <line x1="1" y1="10" x2="23" y2="10" />
-            </svg>
-            Mercado Pago
-          </button>
-        </div>
-
-        <!-- PIX -->
-        <div class="pay-content" id="pix-content">
-          <div class="pix-info">
-            <div class="pix-icon">💠</div>
-            <h4>Pagamento via PIX</h4>
-            <p>Rápido, seguro e sem taxas. Após confirmar seu pedido, você receberá o QR Code e a chave PIX.</p>
-            <div class="pix-key-box">
-              <span>Chave PIX:</span>
-              <strong id="pix-key-display">A ser configurado no Admin</strong>
-            </div>
-            <p class="pix-note">⏱ O pagamento deve ser realizado em até <strong>30 minutos</strong> após o pedido.</p>
-          </div>
-        </div>
-
+        <h2 class="checkout-title">Pagamento Seguro</h2>
+        
         <!-- Mercado Pago -->
-        <div class="pay-content hidden" id="credit-content">
+        <div class="pay-content" id="credit-content" style="display: block;">
           <div class="credit-form" style="text-align:center; padding: 2rem;">
             <div class="mp-notice" style="margin-bottom: 2rem;">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24" style="margin-right:0.5rem">
@@ -380,7 +351,7 @@
             </div>
             <img src="https://logospng.org/download/mercado-pago/logo-mercado-pago-icone-1024.png" width="60" alt="Mercado Pago" style="margin-bottom: 1rem;">
             <h3 style="margin-bottom:0.5rem; color:var(--text-dark);">Pague com o Mercado Pago</h3>
-            <p style="color:var(--text-mid); font-size:0.9rem; line-height:1.4;">Ao confirmar, você será direcionado para o ambiente blindado do Mercado Pago, onde poderá pagar com Cartão de Crédito (até 12x), Pix ou Saldo da conta.</p>
+            <p style="color:var(--text-mid); font-size:0.9rem; line-height:1.4;">Ao confirmar, você será direcionado para o Mercado Livre / Mercado Pago, onde poderá pagar com <strong>PIX</strong>, <strong>Cartão de Crédito (até 12x)</strong> ou <strong>Boleto</strong>.</p>
           </div>
         </div>
 
@@ -400,15 +371,7 @@
           </div>
           <p>Obrigada pela sua compra, <strong id="confirm-name"></strong>! 💜</p>
           <p>Entraremos em contato pelo WhatsApp <strong id="confirm-phone"></strong> para confirmar os detalhes.</p>
-          <div class="confirm-pix-box" id="confirm-pix-box">
-            <h4>💠 Instrução de Pagamento PIX</h4>
-            <p>Copie a chave abaixo e realize o pagamento:</p>
-            <div class="pix-copy-box">
-              <code id="confirm-pix-key"></code>
-              <button class="btn-copy" id="copy-pix" onclick="copyPix()">Copiar</button>
-            </div>
-            <p class="pix-time-warn">⏱ Você tem 30 minutos para pagar!</p>
-          </div>
+          <p>Entraremos em contato pelo WhatsApp <strong id="confirm-phone"></strong> caso necessário.</p>
           <button class="btn-orders-lookup"
             onclick="closeCheckout(); document.getElementById('order-lookup-overlay').classList.add('open');">
             📦 Acompanhar meu pedido

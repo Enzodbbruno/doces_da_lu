@@ -54,7 +54,8 @@ serve(async (req) => {
         external_reference: orderId,
         payment_methods: {
           installments: 12 // Permite parcelamento em até 12x
-        }
+        },
+        notification_url: "https://jzifqnexjbtxwnbbjsjw.supabase.co/functions/v1/mp-webhook"
       })
     });
 

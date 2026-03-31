@@ -558,17 +558,6 @@ function initCheckout() {
   if (backBtn) backBtn.addEventListener('click', goToData);
   if (confirmBtn) confirmBtn.addEventListener('click', confirmOrder);
 
-  // Payment tabs
-  document.querySelectorAll('.pay-tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      document.querySelectorAll('.pay-tab').forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      paymentMethod = tab.dataset.method;
-      document.getElementById('pix-content').classList.toggle('hidden', paymentMethod !== 'pix');
-      document.getElementById('credit-content').classList.toggle('hidden', paymentMethod !== 'credit');
-    });
-  });
-
   // Delivery method toggle
   document.querySelectorAll('input[name="delivery_method"]').forEach(radio => {
     radio.addEventListener('change', (e) => {
@@ -706,50 +695,28 @@ async function confirmOrder() {
     shipping,
     total,
     customer: { name, phone, cpf, email, address, notes },
-    paymentMethod,
+    paymentMethod: 'mercadopago',
     status: 'pending',
   };
   await window.supabaseClient.saveOrder(order);
 
-  if (paymentMethod === 'credit') {
-    confirmBtn.textContent = 'Gerando link de pagamento...';
-    try {
-      const pref = await window.supabaseClient.createCheckoutPreference(order);
-      if (pref && pref.init_point) {
-        window.location.href = pref.init_point;
-        return;
-      }
-    } catch (err) {
-      console.error(err);
-      showToast('⚠️ Erro com o Mercado Pago. Tente novamente.');
-      confirmBtn.disabled = false;
-      confirmBtn.textContent = 'Confirmar Pedido 🎉';
+  confirmBtn.textContent = 'Gerando link de pagamento...';
+  try {
+    const pref = await window.supabaseClient.createCheckoutPreference(order);
+    if (pref && pref.init_point) {
+      // Limpa carrinho antes do redirect para nao manter caso o cliente volte
+      cart = [];
+      saveCart();
+      window.location.href = pref.init_point;
       return;
     }
+  } catch (err) {
+    console.error(err);
+    showToast('⚠️ Erro com o Mercado Pago. Tente novamente.');
+    confirmBtn.disabled = false;
+    confirmBtn.textContent = 'Confirmar Pedido 🎉';
+    return;
   }
-
-  // Envia WhatsApp (Apenas para PIX, pois Cartão é processado online)
-  sendOrderWhatsApp({ name, phone, cpf, email, address, notes, orderNum, total, shipping });
-
-  // Tela de confirmação manual PIX
-  document.getElementById('confirm-name').textContent = name;
-  document.getElementById('confirm-phone').textContent = phone;
-  document.getElementById('confirm-order-num').textContent = orderNum;
-
-  if (paymentMethod === 'pix') {
-    document.getElementById('confirm-pix-box').style.display = 'block';
-    document.getElementById('confirm-pix-key').textContent = config.pixKey || 'Chave não cadastrada';
-    document.getElementById('copy-pix').textContent = 'Copiar';
-  } else {
-    document.getElementById('confirm-pix-box').style.display = 'none';
-  }
-
-  goToStep(3);
-  cart = [];
-  updateCartUI();
-
-  confirmBtn.disabled = false;
-  confirmBtn.textContent = 'Confirmar Pedido 🎉';
 }
 
 /* =====================================================
