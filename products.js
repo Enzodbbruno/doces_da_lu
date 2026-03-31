@@ -104,6 +104,10 @@ async function loadConfig() {
   if (!cfg) {
     cfg = { ...DEFAULT_CONFIG };
     await window.supabaseClient.saveConfig(cfg);
+  } else {
+    // Corrige os placeholders velhos que ficaram presos no banco de dados
+    if (cfg.whatsapp === "5594999999999") cfg.whatsapp = "5594984034495";
+    if (cfg.instagram === "docesdalu") cfg.instagram = "doces_luizaf";
   }
   return cfg;
 }
