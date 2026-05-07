@@ -1,6 +1,6 @@
 // supabase-client.js
-const supabaseUrl = 'https://jzifqnexjbtxwnbbjsjw.supabase.co';
-const supabaseKey = 'sb_publishable_-_NSN0aYsjrCnw6wHI2C3w_Y4Sug849';
+const supabaseUrl = 'https://zixltkbuimnfjoqnorpk.supabase.co';
+const supabaseKey = 'sb_publishable_KZQ8BAYtJRvIZQG-gd9jUw_sO7MlKEN';
 const supabaseApp = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 const supabaseClient = {
@@ -79,7 +79,7 @@ const supabaseClient = {
   async saveConfig(config) {
     // Primeiramente precisamos garantir se há um ID de config pré-existente
     const { data: existing } = await supabaseApp.from('config').select('id').limit(1).single();
-    
+
     const cfg = {
       storename: config.storeName,
       whatsapp: config.whatsapp,
@@ -156,10 +156,10 @@ const supabaseClient = {
 
   async createCheckoutPreference(order) {
     const { data, error } = await supabaseApp.functions.invoke('create-preference', {
-      body: { 
-        items: order.items, 
-        customer: order.customer, 
-        orderId: order.id 
+      body: {
+        items: order.items,
+        customer: order.customer,
+        orderId: order.id
       }
     });
 
@@ -170,10 +170,10 @@ const supabaseClient = {
 
     return data; // Retorna { id, init_point }
   },
-  
+
   async deleteOrders() {
-     const { error } = await supabaseApp.from('orders').delete().neq('id', 'clear');
-     if (error) console.error('Erro deletando historico', error);
+    const { error } = await supabaseApp.from('orders').delete().neq('id', 'clear');
+    if (error) console.error('Erro deletando historico', error);
   }
 };
 
