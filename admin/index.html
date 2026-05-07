@@ -775,10 +775,21 @@ function handleImgUpload(id, input) {
   if (!file) return;
   const reader = new FileReader();
   reader.onload = (e) => {
-    const imgEl = document.getElementById(`img-${id}`);
-    if (imgEl) imgEl.src = e.target.result;
-    const prod = products.find(p => p.id === id);
-    if (prod) prod.image = e.target.result;
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      let w = img.width, h = img.height;
+      if (w > 800) { h = Math.round(h * (800 / w)); w = 800; }
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      const dataUrl = canvas.toDataURL('image/webp', 0.8);
+      const imgEl = document.getElementById(`img-${id}`);
+      if (imgEl) imgEl.src = dataUrl;
+      const prod = products.find(p => p.id === id);
+      if (prod) prod.image = dataUrl;
+    };
+    img.src = e.target.result;
   };
   reader.readAsDataURL(file);
 }
@@ -833,7 +844,7 @@ async function addProduct() {
     shortDesc: 'Descrição curta',
     price: 60,
     weight: '350g',
-    image: '../images/ovo_bolo_cenoura.png',
+    image: '../images/Bolo de Cenoura.jpg',
     available: true,
     highlight: false,
   };

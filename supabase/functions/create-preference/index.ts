@@ -55,7 +55,7 @@ serve(async (req) => {
         payment_methods: {
           installments: 12 // Permite parcelamento em até 12x
         },
-        notification_url: "https://jzifqnexjbtxwnbbjsjw.supabase.co/functions/v1/mp-webhook"
+        notification_url: "https://zixltkbuimnfjoqnorpk.supabase.co/functions/v1/mp-webhook"
       })
     });
 
